@@ -68,13 +68,13 @@ disqusShortname = ""
 
     # Button Style 1
     [[params.navigation.button1]]
-      name = "Get Started"
+      name = "Explore"
       url = "blogs"
 
     # Button Style 2
-    [[params.navigation.button2]]
-      name = "Log In"
-      url = "#"
+    #[[params.navigation.button2]]
+    #  name = "Log In"
+    #  url = "#"
 
   # Banner section
   [params.banner]
@@ -91,9 +91,9 @@ disqusShortname = ""
     # Display your showcases here.
     
     [[params.tiles.showcase]]
-      title = "First project that I tried."
-      subtitle = "Here you can find details on my first project"
-      image = "pic01.jpg"
+      title = "About Me"
+      subtitle = "Resume"
+      image = "pic_about_me.jpg"
       url = "blogs/aliquam"
 
     [[params.tiles.showcase]]
