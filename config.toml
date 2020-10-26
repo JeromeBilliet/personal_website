@@ -52,12 +52,12 @@ disqusShortname = ""
       url = "blogs"
 
     #[[params.navigation.links]]
-    #  name = "Generic Blog"
-    #  url = "blogs/ipsum"
+      name = "About Me"
+      url = "blogs/ipsum"
 
     #[[params.navigation.links]]
-    #  name = "Elements"
-    #  url = "elements.html"
+      name = "AirBnB in Mexico City"
+      url = "elements.html"
 
     # Add custom links here by uncommenting code below. To remove links just delete
     # the [[params.navigation.links]] map associated with that link. Copy and paste
@@ -68,21 +68,21 @@ disqusShortname = ""
 
     # Button Style 1
     [[params.navigation.button1]]
-      name = "Get Started"
+      name = "Explore"
       url = "blogs"
 
     # Button Style 2
-    [[params.navigation.button2]]
-      name = "Log In"
-      url = "#"
+    #[[params.navigation.button2]]
+    #  name = "Log In"
+    #  url = "#"
 
   # Banner section
   [params.banner]
     # To change the background image on the homepage banner, replace 'banner.jpg' in
     # the 'static/img' folder.
     title = "Hi, my name is Jerome Billiet"
-    subtitle = "This is a personal website created to showcase my work."
-    buttonText = "Get Started"
+    subtitle = "This is my personal website."
+    buttonText = "Explore"
 
 
   # Tiles Section
@@ -91,10 +91,10 @@ disqusShortname = ""
     # Display your showcases here.
     
     [[params.tiles.showcase]]
-      title = "First project that I tried."
-      subtitle = "Here you can find details on my first project"
-      image = "pic01.jpg"
-      url = "blogs/aliquam"
+      title = "About Me"
+      subtitle = "Resume"
+      image = "pic_about_me.jpg"
+      url = "blogs/about_me"
 
     [[params.tiles.showcase]]
       title = "Tempus"
