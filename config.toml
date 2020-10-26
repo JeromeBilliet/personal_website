@@ -1,5 +1,5 @@
 # Site settings
-baseURL = "http://example.org/"
+baseURL = "https://jeromebilliet.netlify.app"
 languageCode = "en-us"
 title = "Portfolio website for Jerome Billiet"
 theme = "forty"
@@ -76,7 +76,6 @@ disqusShortname = ""
       name = "Log In"
       url = "#"
 
-
   # Banner section
   [params.banner]
     # To change the background image on the homepage banner, replace 'banner.jpg' in
@@ -92,7 +91,7 @@ disqusShortname = ""
     # Display your showcases here.
     
     [[params.tiles.showcase]]
-      title = "First project"
+      title = "First project that I tried."
       subtitle = "Here you can find details on my first project"
       image = "pic01.jpg"
       url = "blogs/aliquam"
@@ -190,32 +189,32 @@ disqusShortname = ""
     copyright = "Company Name"
 
     # Uses font awesome icons
-    [[params.footer.social]]
-      icon = "fa-twitter"
-      url= "https://www.twitter.com"
-      label = "Twitter"
+    #[[params.footer.social]]
+    #  icon = "fa-twitter"
+    #  url= "https://www.twitter.com"
+    #  label = "Twitter"
 
-    [[params.footer.social]]
-      icon = "fa-facebook"
-      url= "https://www.facebook.com"
-      label = "Facebook"
+    #[[params.footer.social]]
+    #  icon = "fa-facebook"
+    #  url= "https://www.facebook.com"
+    #  label = "Facebook"
 
-    [[params.footer.social]]
-      icon = "fa-instagram"
-      url= "https://www.instagram.com"
-      label = "Instagram"
+    #[[params.footer.social]]
+    #  icon = "fa-instagram"
+    #  url= "https://www.instagram.com"
+    #  label = "Instagram"
     
     [[params.footer.social]]
       icon = "fa-github"
-      url= "https://www.github.com"
+      url= "https://www.github.com/JeromeBilliet"
       label = "GitHub"
 
     [[params.footer.social]]
       icon = "fa-linkedin"
-      url= "https://www.linkedin.com"
+      url= "https://www.linkedin.com/in/j%C3%A9r%C3%B4mebilliet/"
       label = "LinkedIn"
 
-    [[params.footer.quicklinks]]
-      text = "Design: "
-      url= "https://www.html5up.net"
-      alt = "HTML5 UP"
+    #[[params.footer.quicklinks]]
+    #  text = "Design: "
+    #  url= "https://www.html5up.net"
+    #  alt = "HTML5 UP"
