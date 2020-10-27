@@ -94,13 +94,13 @@ disqusShortname = ""
       title = "About Me"
       subtitle = "Resume"
       image = "projects/pic_about_me.jpg"
-      url = "blogs/aliquam"
+      url = "projects/about_me"
 
     [[params.tiles.showcase]]
       title = "Tempus"
       subtitle = "Feugiat Amet Tempus"
       image = "pic02.jpg"
-      url = "projects/about_me"
+      url = "blogs/tempus"
 
     [[params.tiles.showcase]]
       title = "Magna"
