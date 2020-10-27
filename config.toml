@@ -100,7 +100,7 @@ disqusShortname = ""
       title = "Youth Risk Behavior"
       subtitle = "Analysis of the youth risk behavior survey"
       image = "pic02.jpg"
-      url = "projects/yout_risk_behavior"
+      url = "projects/youth_risk_behavior"
 
     [[params.tiles.showcase]]
       title = "Magna"
