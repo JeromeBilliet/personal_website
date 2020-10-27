@@ -55,7 +55,7 @@ library(httr)
 
 ```
 
-#introduction
+# introduction
 
 Welcome to my blog on youth risk behavior. In this blog, I will showcase the work I did as part of my Data Analytics for Finance course at London Business School.
 
