@@ -49,6 +49,10 @@ library(countrycode)
 ```
 
 
+#Introduction
+
+Welcome to my blog on the General Social Survey. In this blog, I will showcase the analysis that I did as part of the Data Analytics for Finance course at London Business School. 
+
 # General Social Survey (GSS)
 
 The [General Social Survey (GSS)](http://www.gss.norc.org/) gathers data on American society in order to monitor and explain trends in attitudes, behaviours, and attributes. Many trends have been tracked for decades, so one can see the evolution of attitudes, etc in American Society.
