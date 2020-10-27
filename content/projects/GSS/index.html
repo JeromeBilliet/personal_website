@@ -1,0 +1,359 @@
+---
+title: "General Social Survey"
+author: "Jerome Billiet,"
+date: "2020-10-27"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+<link href="index_files/anchor-sections/anchor-sections.css" rel="stylesheet" />
+<script src="index_files/anchor-sections/anchor-sections.js"></script>
+<script src="index_files/kePrint/kePrint.js"></script>
+<link href="index_files/lightable/lightable.css" rel="stylesheet" />
+
+
+<div id="general-social-survey-gss" class="section level1">
+<h1>General Social Survey (GSS)</h1>
+<p>The <a href="http://www.gss.norc.org/">General Social Survey (GSS)</a> gathers data on American society in order to monitor and explain trends in attitudes, behaviours, and attributes. Many trends have been tracked for decades, so one can see the evolution of attitudes, etc in American Society.</p>
+<p>In this assignment we analyze data from the <strong>2016 GSS sample data</strong>, using it to estimate values of <em>population parameters</em> of interest about US adults. The GSS sample data file has 2867 observations of 935 variables, but we are only interested in very few of these variables and you are using a smaller file.</p>
+<pre class="r"><code>gss &lt;- read_csv(here::here(&quot;data&quot;, &quot;smallgss2016.csv&quot;), 
+                na = c(&quot;&quot;, &quot;Don&#39;t know&quot;,
+                       &quot;No answer&quot;, &quot;Not applicable&quot;))</code></pre>
+<p>We will be creating 95% confidence intervals for population parameters. The variables we have are the following:</p>
+<ul>
+<li>hours and minutes spent on email weekly. The responses to these questions are recorded in the <code>emailhr</code> and <code>emailmin</code> variables. For example, if the response is 2.50 hours, this would be recorded as emailhr = 2 and emailmin = 30.</li>
+<li><code>snapchat</code>, <code>instagrm</code>, <code>twitter</code>: whether respondents used these social media in 2016</li>
+<li><code>sex</code>: Female - Male</li>
+<li><code>degree</code>: highest education level attained</li>
+</ul>
+<div id="instagram-and-snapchat-by-sex" class="section level2">
+<h2>Instagram and Snapchat, by sex</h2>
+<p>We estimate the <em>population</em> proportion of Snapchat or Instagram users in 2016.</p>
+<ol style="list-style-type: decimal">
+<li>Create a new variable, <code>snap_insta</code> that is <em>Yes</em> if the respondent reported using any of Snapchat (<code>snapchat</code>) or Instagram (<code>instagrm</code>), and <em>No</em> if not. If the recorded value was NA for both of these questions, the value in your new variable should also be NA.</li>
+<li>Calculate the proportion of Yes’s for <code>snap_insta</code> among those who answered the question, i.e. excluding NAs.</li>
+<li>Using the CI formula for proportions, please construct 95% CIs for men and women who used either Snapchat or Instagram</li>
+</ol>
+<pre class="r"><code>#add a culumn that is &quot;Yes&quot; of both instagrm and snapchat are &quot;Yes&quot;, that is &quot;NA&quot; if both instagrm and snapchat are &quot;NA&quot;, and is &quot;No&quot; otherwise.
+#gss &lt;- gss %&gt;% 
+#  mutate(snap_insta = ifelse(snapchat==&quot;Yes&quot; | instagrm == &quot;Yes&quot;,&quot;Yes&quot;,ifelse(snapchat==&quot;NA&quot; &amp; instagrm == &quot;NA&quot;, &quot;NA&quot;, &quot;No&quot;)))
+
+gss &lt;- gss %&gt;%
+  mutate(snap_insta = if_else(snapchat == &quot;NA&quot; &amp; instagrm == &quot;NA&quot;, &quot;NA&quot;, if_else(snapchat == &quot;Yes&quot; | instagrm == &quot;Yes&quot;, &quot;Yes&quot;, &quot;No&quot;)))
+
+
+#calculate proportion of Yes&#39;s.
+#First, we calculate the total amount of Yes&#39;s
+gss_snap_insta_yes &lt;- gss %&gt;% 
+  select(snap_insta) %&gt;% 
+  filter(snap_insta ==&quot;Yes&quot;) %&gt;% 
+  summarize(count_yes = n()) 
+  
+#Second, we calculate the total amount of Yes&#39;s and No&#39;s
+gss_snap_insta_yes_and_no &lt;- gss %&gt;% 
+  select(snap_insta) %&gt;% 
+  filter(snap_insta ==&quot;Yes&quot; | snap_insta ==&quot;No&quot;) %&gt;% 
+  summarize(count_yes_and_no = n()) 
+
+#Third, we calculate the total proportion by deviding the two above.
+snap_insta_proportion &lt;- gss_snap_insta_yes / gss_snap_insta_yes_and_no
+#TO DO: How to visualize this now? View correct? 
+
+#CI for men and women using either Snapchat or Instagram.
+gss_ci_calculations &lt;- gss %&gt;% 
+  group_by(sex, snap_insta) %&gt;% 
+  summarize(count = n()) %&gt;% 
+  filter(snap_insta == &quot;Yes&quot; | snap_insta == &quot;No&quot;) %&gt;%
+  summarize(
+      snap_insta,
+      count,
+      total_gender = sum(count),
+      proportions = count / total_gender,
+      SE = sqrt(proportions*(1-proportions)/total_gender), #formula for SE since conditions np and n(1-p) &gt;= 10 are met
+      critical_Z = qnorm(0.975),
+      lower_end = proportions - critical_Z*SE,
+      higher_end = proportions + critical_Z*SE
+      )
+
+gss_ci_overview &lt;- gss_ci_calculations %&gt;% 
+  filter(snap_insta == &quot;Yes&quot;) %&gt;% 
+  select(lower_end, higher_end)
+
+gss_ci_overview %&gt;% 
+  kbl(col.names = c(&quot;Gender&quot;, &quot;Lower CI&quot;,&quot;Upper CI&quot;)) %&gt;%
+  kable_material(c(&quot;striped&quot;, &quot;hover&quot;)) %&gt;%
+  kable_styling(fixed_thead = T)</code></pre>
+<table class=" lightable-material lightable-striped lightable-hover table" style='font-family: "Source Sans Pro", helvetica, sans-serif; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;'>
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Gender
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Lower CI
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Upper CI
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Female
+</td>
+<td style="text-align:right;">
+0.384
+</td>
+<td style="text-align:right;">
+0.454
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Male
+</td>
+<td style="text-align:right;">
+0.281
+</td>
+<td style="text-align:right;">
+0.356
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="twitter-by-education-level" class="section level2">
+<h2>Twitter, by education level</h2>
+<p>We estimate the <em>population</em> proportion of Twitter users by education level in 2016.</p>
+<p>There are 5 education levels in variable <code>degree</code> which, in ascneding order of years of education, are Lt high school, High School, Junior college, Bachelor, Graduate.</p>
+<ol style="list-style-type: decimal">
+<li>Turn <code>degree</code> from a character variable into a factor variable. Make sure the order is the correct one and that levels are not sorted alphabetically which is what R by default does.</li>
+<li>Create a new variable, <code>bachelor_graduate</code> that is <em>Yes</em> if the respondent has either a <code>Bachelor</code> or <code>Graduate</code> degree. As before, if the recorded value for either was NA, the value in your new variable should also be NA.</li>
+<li>Calculate the proportion of <code>bachelor_graduate</code> who do (Yes) and who don’t (No) use twitter.</li>
+<li>Using the CI formula for proportions, please construct two 95% CIs for <code>bachelor_graduate</code> vs whether they use (Yes) and don’t (No) use twitter.</li>
+<li>Do these two Confidence Intervals overlap? (No)</li>
+</ol>
+<pre class="r"><code>#Create a list for different degree levels, ordered by ascending years of education. 
+degree_levels &lt;- c(&quot;Lt high school&quot;,&quot;High School&quot;,&quot;Junior college&quot;,&quot;Bachelor&quot;,&quot;Graduate&quot;)
+
+#Making the degree variable a factor and assigning the degree levels. 
+gss_degree_factor &lt;- gss %&gt;% 
+  mutate(degree = factor(degree, ordered = TRUE, levels = degree_levels))
+
+#create &quot;bachelor_graduate&quot; variable that is &quot;yes&quot; if respondent is either a &quot;Bachelor&quot; or a &quot;Graduate&quot;. If the recorded value for either is &quot;NA&quot;, the new variable should also be &quot;NA&quot;
+gss_degree_factor_newvar &lt;- gss_degree_factor %&gt;% 
+  mutate(bachelor_graduate = ifelse(degree==&quot;Bachelor&quot; | degree == &quot;Graduate&quot;,&quot;Yes&quot;,ifelse(degree==&quot;NA&quot;, &quot;NA&quot;, &quot;No&quot;)))
+
+#Calculating the proportions
+gss_twitter_prop &lt;- gss_degree_factor_newvar %&gt;% 
+  group_by(bachelor_graduate, twitter) %&gt;% 
+  summarize(count = n()) %&gt;% 
+  filter((bachelor_graduate == &quot;Yes&quot; | bachelor_graduate == &quot;No&quot;)&amp;(twitter ==&quot;Yes&quot; | twitter == &quot;No&quot;)) %&gt;% 
+  mutate(total_bachelor_graduate = sum(count)) %&gt;% 
+  summarize(
+    twitter,
+    count,
+    total_bachelor_graduate,
+    proportions = count / total_bachelor_graduate 
+  )
+
+#Calculating the CIs
+gss_twitter_ci &lt;- gss_twitter_prop %&gt;% 
+  summarize(
+    twitter,
+    count,
+    total_bachelor_graduate,
+    proportions = count / total_bachelor_graduate,
+    SE = sqrt(proportions*(1-proportions)/total_bachelor_graduate), #formula for SE since conditions np and n(1-p) &gt;= 10 are met
+    critical_Z = qnorm(0.975),
+    lower_end = proportions - critical_Z*SE,
+    higher_end = proportions + critical_Z*SE
+      )
+
+#Make an overview of the CIs
+gss_twitter_ci_overview &lt;- gss_twitter_ci %&gt;% 
+  filter(bachelor_graduate == &quot;Yes&quot;) %&gt;% 
+  select(twitter,lower_end,higher_end)
+
+gss_twitter_ci_overview %&gt;% 
+  kbl(col.names = c(&quot;Bachelor or graduate&quot;,&quot;Twitter user&quot; ,&quot;Lower CI&quot;,&quot;Upper CI&quot;)) %&gt;%
+  kable_material(c(&quot;striped&quot;, &quot;hover&quot;)) %&gt;%
+  kable_styling(fixed_thead = T)</code></pre>
+<table class=" lightable-material lightable-striped lightable-hover table" style='font-family: "Source Sans Pro", helvetica, sans-serif; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;'>
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Bachelor or graduate
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Twitter user
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Lower CI
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Upper CI
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Yes
+</td>
+<td style="text-align:left;">
+No
+</td>
+<td style="text-align:right;">
+0.729
+</td>
+<td style="text-align:right;">
+0.804
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yes
+</td>
+<td style="text-align:left;">
+Yes
+</td>
+<td style="text-align:right;">
+0.196
+</td>
+<td style="text-align:right;">
+0.271
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>#Note that the two CIs do not overlap</code></pre>
+</div>
+<div id="email-usage" class="section level2">
+<h2>Email usage</h2>
+<p>We estimate the <em>population</em> parameter on time spent on email weekly.</p>
+<ol style="list-style-type: decimal">
+<li>Create a new variable called <code>email</code> that combines <code>emailhr</code> and <code>emailmin</code> to reports the number of minutes the respondents spend on email weekly.</li>
+<li>Visualise the distribution of this new variable. Find the mean and the median number of minutes respondents spend on email weekly. Is the mean or the median a better measure of the typical amoung of time Americans spend on email weekly? Why?</li>
+</ol>
+<p><strong>ANSWER: The mdian is a better measure as it is not impacted by outliers.</strong></p>
+<ol style="list-style-type: decimal">
+<li>Using the <code>infer</code> package, calculate a 95% bootstrap confidence interval for the mean amount of time Americans spend on email weekly. Interpret this interval in context of the data, reporting its endpoints in “humanized” units (e.g. instead of 108 minutes, report 1 hr and 8 minutes). If you get a result that seems a bit odd, discuss why you think this might be the case.</li>
+<li>Would you expect a 99% confidence interval to be wider or narrower than the interval you calculated above? Explain your reasoning.</li>
+</ol>
+<p><strong>ANSWER: A 99% confidence interval is expected to be wider since we need to be more certain that the true population parameter sits in this interval. The wider the interval, the bigger the confidence, and vice versa.</strong></p>
+<pre class="r"><code>gss[gss==&quot;NA&quot;] &lt;- NA
+
+#Create new variable &quot;email&quot; putting the time spent in total amount of minutes.
+gss_email &lt;- gss %&gt;% 
+  select(emailmin,emailhr,sex) %&gt;% 
+  na.omit() %&gt;% 
+  mutate(
+    emailhr = as.integer(emailhr),
+    emailmin = as.integer(emailmin),
+    email= emailhr * 60 +emailmin)
+
+#TO DO: check if plots work
+#Visualize the distribution.
+ggplot(gss_email,aes(email))+
+  geom_boxplot() +
+  labs(x=&quot;Minutes spend on email weekly&quot;, title = &quot;Distribution of amount of minutes spent on email weekly&quot;, subtitle = &quot;Data distribution is skewed due to outliers&quot;)</code></pre>
+<p><img src="index_files/figure-html/email_usage-1.png" width="648" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#Another way to visualize the distribution.
+ggplot(gss_email,aes(email))+
+  geom_histogram() +
+  labs(x=&quot;Minutes spend on email weekly&quot;, title = &quot;Distribution of amount of minutes spent on email weekly&quot;, subtitle = &quot;Data distribution is skewed due to outliers&quot;)</code></pre>
+<p><img src="index_files/figure-html/email_usage-2.png" width="648" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#Calculating mean and median.
+gss_email_mean_and_median &lt;- gss_email %&gt;% 
+  summarise(
+    mean = mean(email), #better measure since not impacted by outliers
+    median = median(email)
+  )
+
+gss_email_mean_and_median %&gt;% 
+  kbl(col.names = c(&quot;Mean&quot;,&quot;Median&quot;)) %&gt;%
+  kable_material(c(&quot;striped&quot;, &quot;hover&quot;)) %&gt;%
+  kable_styling(fixed_thead = T)</code></pre>
+<table class=" lightable-material lightable-striped lightable-hover table" style='font-family: "Source Sans Pro", helvetica, sans-serif; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;'>
+<thead>
+<tr>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Mean
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Median
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+417
+</td>
+<td style="text-align:right;">
+120
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>#bootstrap confidence interval
+library(infer)
+gss_bootstrap_email_ci &lt;- gss_email %&gt;% 
+  specify(response = email) %&gt;% 
+  generate(reps=100,type=&quot;bootstrap&quot;) %&gt;% 
+  calculate(stat = &quot;mean&quot;) %&gt;% 
+  get_confidence_interval(level=0.95, type=&quot;percentile&quot;) %&gt;% 
+  mutate(
+    lower_ci = lower_ci /60,
+    upper_ci = upper_ci /60) %&gt;% 
+  separate(lower_ci, c(&quot;lower_ci_hours&quot;, &quot;lower_ci_minutes&quot;), sep = &quot;(?=\\d{2}$)&quot;) %&gt;% 
+  separate(upper_ci, c(&quot;upper_ci_hours&quot;, &quot;upper_ci_minutes&quot;), sep = &quot;(?=\\d{2}$)&quot;)
+
+gss_bootstrap_email_ci %&gt;%
+  kbl(col.names = c(&quot;lower_ci_hours&quot;, &quot;lower_ci_minutes&quot;,&quot;upper_ci_hours&quot;, &quot;upper_ci_minutes&quot;)) %&gt;%
+  kable_material(c(&quot;striped&quot;, &quot;hover&quot;)) %&gt;%
+  kable_styling(fixed_thead = T)</code></pre>
+<table class=" lightable-material lightable-striped lightable-hover table" style='font-family: "Source Sans Pro", helvetica, sans-serif; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;'>
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+lower_ci_hours
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+lower_ci_minutes
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+upper_ci_hours
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+upper_ci_minutes
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+6.524558570851
+</td>
+<td style="text-align:left;">
+02
+</td>
+<td style="text-align:left;">
+7.466061249241
+</td>
+<td style="text-align:left;">
+96
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
