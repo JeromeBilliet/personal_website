@@ -7,3 +7,4 @@ output: html_document
 ## below, you can find my resume. 
 
 ![resume](jerome_resume.jpg)
+

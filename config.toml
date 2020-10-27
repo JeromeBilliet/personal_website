@@ -97,10 +97,10 @@ disqusShortname = ""
       url = "projects/about_me"
 
     [[params.tiles.showcase]]
-      title = "Tempus"
-      subtitle = "Feugiat Amet Tempus"
+      title = "Youth Risk Behavior"
+      subtitle = "Analysis of the youth risk behavior survey"
       image = "pic02.jpg"
-      url = "blogs/tempus"
+      url = "projects/yout_risk_behavior"
 
     [[params.tiles.showcase]]
       title = "Magna"

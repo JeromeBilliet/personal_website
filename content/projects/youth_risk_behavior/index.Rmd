@@ -1,0 +1,317 @@
+---
+title: 'Youth Risk Behavior Surveillance'
+author: 'Jerome
+  Billiet'
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+  pdf_document:
+    toc: yes
+---
+
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries, echo=FALSE}
+
+# Load ggplot2, dplyr, and all the other tidyverse packages
+library(tidyverse)  
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(GGally)
+library(readxl)
+library(here)
+library(skimr)
+library(janitor)
+library(broom)
+library(tidyquant)
+library(kableExtra)
+library(infer)
+library(openintro)
+library(tidyquant)
+library(httr)
+
+```
+
+#introduction
+
+Welcome to my blog on youth risk behavior. In this blog, I will showcase the work I did as part of my Data Analytics for Finance course at London Business School.
+
+# Youth Risk Behavior Surveillance
+
+Every two years, the Centers for Disease Control and Prevention conduct the [Youth Risk Behavior Surveillance System (YRBSS)](https://www.cdc.gov/healthyyouth/data/yrbs/index.htm) survey, where it takes data from high schoolers (9th through 12th grade), to analyze health patterns. Below, I provide a thorough analysis of this data.
+
+## Load the data
+
+This data is part of the `openintro` textbook and we can load and inspect it. There are observations on 13 different variables, some categorical and some numerical. Below, we have a first look at the data. 
+
+```{r}
+
+data(yrbss)
+glimpse(yrbss)
+skim(yrbss)
+
+```
+
+## Exploratory Data Analysis
+
+We will first start with analyzing the `weight` of participants in kilograms. 
+
+We are missing 1004 weight observations. (see output from skim(yrbss) above.) 
+
+Below, we have plotted the distribution of the weights both with and without NAs. Both plots look the same.
+
+```{r, eda_on_weight}
+
+
+#Distribution including missing values. 
+ggplot(yrbss, aes(x = weight)) +
+  geom_density(alpha = 0.2) + #density plot with tranparency set to 20%
+  theme_bw() +                #theme
+  labs ( x="Weight", 
+         title = "Weight Distribution",
+         y = "Density" 
+  )
+
+#Removing the NAs from the data.
+yrbss_NA_removed <- yrbss %>% 
+  select(weight) %>% #selecting the weight column
+  na.omit() #removing NAs
+skim(yrbss_NA_removed) #confirms that there are no missing values
+  
+#Distribution without NA values. 
+ggplot(yrbss_NA_removed, aes(x = weight)) +
+  geom_density(alpha = 0.2) + #density plot with tranparency set to 20%
+  theme_bw() +                #theme
+  labs ( x="Weight", title = "Weight Distribution (NAs removed)",
+    y     = "Density" 
+  ) #assigning axis titles and main title
+
+```
+
+Next, we consider the possible relationship between a high schooler’s weight and their physical activity. Plotting the data is a useful first step because it helps us quickly visualize trends, identify strong associations, and develop research questions.
+
+Let’s create a new variable `physical_3plus`, which will be `yes` if they are physically active for at least 3 days a week, and `no` otherwise.
+
+  
+```{r}
+yrbss <- yrbss %>% 
+  mutate(physical_3plus = ifelse(physically_active_7d >= 3, "yes", "no"))
+
+#Create overview with average and median weight for people with different physical activity.
+yrbss_weight_physical_3plus <- yrbss %>% filter(!is.na(physical_3plus), !is.na(weight)) %>% 
+  group_by(physical_3plus) %>% 
+  summarise(
+    count = n(),
+    mean_weight = mean(weight),
+    median_weight = median(weight)) %>% 
+  mutate(prop= count/sum(count))
+
+#Make table from overview created above
+yrbss_weight_physical_3plus %>% 
+  kbl(col.names = c("Physical_3plus", "Count","Mean Weight", "Median Weight", "Proportion")) %>%
+  kable_material(c("striped", "hover")) %>%
+  kable_styling(fixed_thead = T)
+
+#remove NAs for plotting in order to spot trends.
+yrbss_physical_3plus_NA_rmeoved <- yrbss %>% 
+  filter(physical_3plus =="yes" | physical_3plus == "no")
+
+#Boxplots to compare weights of people with different physical activity. 
+
+ggplot(yrbss_physical_3plus_NA_rmeoved, aes(y = weight)) +
+  
+  #boxplot
+  geom_boxplot() + 
+  facet_wrap(~physical_3plus) +
+  
+  #theme
+  theme_bw() +
+  
+  #assigning axis titles and main title
+  labs ( x="",
+         title = "Weight Distribution",
+         y="Weight" 
+  )
+
+```
+
+Next, we provide a 95% confidence interval for the population proportion of high schools that are *NOT* active 3 or more days per week?
+
+```{r, CI_prop_physical_3plus}
+
+#Create the CI
+yrbss_physical_3plus_prop <- yrbss %>% 
+  
+  #Remove NAs
+  filter(!is.na(physical_3plus)) %>%  
+  
+  #Group
+  group_by(physical_3plus) %>% 
+  
+  #sum of non NAs for physical_3plus
+  summarise(
+    count = n()) %>%
+  mutate(
+    #proportion yes and no
+    prop= count/sum(count), 
+    
+    #formula for SE since conditions np and n(1-p) >= 10 are met
+    SE = sqrt(prop*(1-prop)/count), 
+    
+    #assuming normal distribution
+    critical_Z = qnorm(0.975), 
+    lower_end = prop - critical_Z*SE, 
+    higher_end = prop + critical_Z*SE
+    ) 
+
+#Create table to present CI
+yrbss_physical_3plus_prop %>% 
+  filter(physical_3plus =="yes") %>% 
+  select(physical_3plus,lower_end,higher_end) %>% 
+  kbl(col.names = c("Physical_3plus", "Lower CI","Upper CI")) %>%
+  kable_material(c("striped", "hover")) %>%
+  kable_styling(fixed_thead = T)
+
+```
+
+  
+Now, we make a boxplot of `physical_3plus` vs. `weight` to examine a potential relationship between these two variables? 
+
+We find that the weight is similar and slightly higher for those that are more physically active. This is in contrast with our initial expectations. We expected to see opposite results, since doing more sports would reduce the chances of being overweight.
+
+```{r, boxplot}
+#Note that this is the same plot as we did to quickly analyse the data. 
+#Boxplots to compare weights of people with different physical activity. 
+ggplot(yrbss_physical_3plus_NA_rmeoved, aes(y = weight)) +
+  
+  #boxplot
+  geom_boxplot() + 
+  facet_wrap(~physical_3plus) +
+  
+  #theme
+  theme_bw() +              
+  
+  #assigning axis titles and main title
+  labs ( x="", 
+         title = "Weight Distribution",
+         y = "Weight" 
+  ) 
+```
+
+## Confidence Interval
+
+Boxplots show how the medians of the two distributions compare, but we can also compare the means of the distributions using either a confidence interval or a hypothesis test. Note that when we calculate the mean/SD, etc weight in these groups using the mean function, we must ignore any missing values by setting the `na.rm = TRUE`.
+
+
+```{r}
+yrbss %>%
+  group_by(physical_3plus) %>%
+  filter(!is.na(physical_3plus)) %>% 
+  summarise(mean_weight = mean(weight, na.rm = TRUE),
+            sd_weight = sd(weight, na.rm=TRUE),
+            count = n(),
+            se_weight = sd_weight/sqrt(count),
+            t_critical = qt(0.975, count-1), 
+            margin_of_error = t_critical * se_weight,
+            lower = mean_weight - t_critical * se_weight,
+            upper = mean_weight + t_critical * se_weight
+            )
+
+```
+
+There is an observed difference of about 1.77kg (68.44 - 66.67), and we notice that the two confidence intervals do not overlap. It seems that the difference is at least 95% statistically significant. Let us also conduct a hypothesis test.
+
+## Hypothesis test with formula suggesting mean weights different for people who exercise
+
+Null hypothesis: Mean weights are the same for those who exercise at least 3 times a week.    
+
+Alternative hypothesis: Mean weights are different for those who exercise at least 3 times a week.
+
+Looking at the results from t.test below, we can reject the null hypothesis, since the 95% CI does not include zero and since the p-value is extremely small, meaning that it is extremely unlikely that we see the current results under the null hypothesis. As a result, mean weights are suggested to be different for those who exercise at least 3 times a week.
+
+```{r}
+t.test(weight ~ physical_3plus, data = yrbss)
+```
+
+
+
+## Hypothesis test with `infer`
+
+
+Next, we will introduce a new function, `hypothesize`, that falls into the infer workflow. 
+
+But first, we need to initialize the test, which we will save as `obs_diff`.
+
+```{r}
+obs_diff <- yrbss %>%
+  specify(weight ~ physical_3plus) %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+
+```
+
+
+Now, we need to simulate the test on the null distribution, which we will save as null.
+
+
+```{r}
+null_dist <- yrbss %>%
+  specify(weight ~ physical_3plus) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+
+```
+
+
+Here, `hypothesize` is used to set the null hypothesis as a test for independence, i.e., that there is no difference between the two population means. In one sample cases, the null argument can be set to *point* to test a hypothesis relative to a point estimate.
+
+Also, note that the `type` argument within generate is set to permute, which is the argument when generating a null distribution for a hypothesis test.
+
+We can visualize this null distribution with the following code:
+
+```{r}
+ggplot(data = null_dist, aes(x = stat)) +
+  geom_histogram()
+
+```
+
+
+Now that the test is initialized and the null distribution formed, we can visualise to see how many of these null permutations have a difference of at least `obs_stat` of `r obs_diff %>% pull() %>% round(2)`?
+
+We can also calculate the p-value for your hypothesis test using the function `infer::get_p_value()`.
+
+```{r}
+
+null_dist %>% visualize() +
+  shade_p_value(obs_stat = obs_diff, direction = "two-sided")
+
+null_dist %>%
+  get_p_value(obs_stat = obs_diff, direction = "two_sided")
+
+```
+
+
+This the standard workflow for performing hypothesis tests.
