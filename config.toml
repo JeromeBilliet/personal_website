@@ -103,10 +103,10 @@ disqusShortname = ""
       url = "projects/youth_risk_behavior"
 
     [[params.tiles.showcase]]
-      title = "Magna"
-      subtitle = "Lorem Etiam Nullam"
-      image = "pic03.jpg"
-      url = "blogs/magna"
+      title = "General Social Survey"
+      subtitle = "Analasing use of social media in America"
+      image = "projects/pic_social_media.jpg"
+      url = "projects/GSS"
 
     [[params.tiles.showcase]]
       title = "Ipsum"
