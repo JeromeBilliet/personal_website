@@ -6,5 +6,5 @@ output: html_document
 
 ## below, you can find my resume. 
 
-![resume](pic_resume.jpg)
+![](pic_resume.jpg)
 
