@@ -177,7 +177,7 @@ disqusShortname = ""
     title = "Email"
     email = "jbilliet.mfa2021@london.edu"
 
-    [[params.contact.phone]]
+    #[[params.contact.phone]]
     #title = "Phone"
     #phone = "(000) 000-0000 x1234"
 
