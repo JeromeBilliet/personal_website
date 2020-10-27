@@ -49,7 +49,7 @@ library(countrycode)
 ```
 
 
-#Introduction
+# Introduction
 
 Welcome to my blog on the General Social Survey. In this blog, I will showcase the analysis that I did as part of the Data Analytics for Finance course at London Business School. 
 

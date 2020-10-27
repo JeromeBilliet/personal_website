@@ -109,10 +109,10 @@ disqusShortname = ""
       url = "projects/GSS"
 
     [[params.tiles.showcase]]
-      title = "Ipsum"
-      subtitle = "Nisl Sed Aliquam"
-      image = "pic04.jpg"
-      url = "blogs/ipsum"
+      title = "Stock Returns"
+      subtitle = "Analising returns and their distribution"
+      image = "projects/pic_stocks.jpg"
+      url = "projects/stock_returns"
 
     [[params.tiles.showcase]]
       title = "Consequat"
